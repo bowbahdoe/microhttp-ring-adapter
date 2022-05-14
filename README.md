@@ -1,5 +1,6 @@
 # Microhttp Ring Adapter
 
+# THIS REQUIRES VIRTUAL THREADS. JDK 19 + --enable-preview
 ## What 
 Adapter for using [microhttp](https://github.com/ebarlas/microhttp)
 as a ring server.
@@ -15,7 +16,7 @@ I am confident it is as production ready as microhttp.
 ## deps.edn
 
 ```clojure
-io.github.bowbahdoe/microhttp-ring-adapter {:git/tag "v0.0.1"}
+io.github.bowbahdoe/microhttp-ring-adapter {:git/tag "v0.0.2"}
 ```
 
 ## Usage

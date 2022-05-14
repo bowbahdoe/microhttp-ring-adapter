@@ -76,20 +76,25 @@
                                          out)
     (Response. (:status ring-response)
                (or (status->reason (:status ring-response)) "IDK")
-               (reduce (fn [header-list [k v]]
-                         (conj header-list (Header. k v)))
-                       []
-                       (:headers ring-response))
+               (mapv #(Header. (key %) (val %))
+                     (:headers ring-response))
                (.toByteArray out))))
 
 (defn- ring-handler->Handler
   [{:keys [host port]} ring-handler]
   (reify Handler
     (handle [_ microhttp-request callback]
-      (let [ring-request       (->req {:host host
-                                       :port port} microhttp-request)
-            microhttp-response (<-res (ring-handler ring-request))]
-        (.accept callback microhttp-response)))))
+      (let [ring-request (->req {:host host
+                                 :port port} microhttp-request)]
+        (Thread/startVirtualThread
+          (fn []
+            (.accept callback
+                     (<-res (try
+                              (ring-handler ring-request)
+                              (catch Exception e
+                                {:status 500
+                                 :headers {}
+                                 :body    (.getMessage e)}))))))))))
 
 (defn create-microhttp-event-loop
   ([handler]
