@@ -17,3 +17,19 @@ I am confident it is as production ready as microhttp.
 ```clojure
 io.github.bowbahdoe/microhttp-ring-adapter {:git/tag "v0.0.1"}
 ```
+
+## Usage
+
+```clojure
+(require '[dev.mccue.microhttp-ring-adapter :as adapter])
+
+(defn handler 
+  [request]
+  {:status 200 
+   :headers {}
+   :body    (str request)})
+
+(def event-loop (create-microhttp-event-loop #'handler {:port 1242}))
+
+(.start event-loop)
+```
