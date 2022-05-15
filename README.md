@@ -16,13 +16,13 @@ I am confident it is as production ready as microhttp.
 ## deps.edn
 
 ```clojure
-io.github.bowbahdoe/microhttp-ring-adapter {:git/tag "v0.0.3"}
+io.github.bowbahdoe/microhttp-ring-adapter {:git/tag "v0.0.4"}
 ```
 
 ## Usage
 
 ```clojure
-(require '[dev.mccue.microhttp-ring-adapter :as adapter])
+(require '[dev.mccue.microhttp-ring-adapter :as microhttp])
 
 (defn handler 
   [request]
@@ -30,7 +30,7 @@ io.github.bowbahdoe/microhttp-ring-adapter {:git/tag "v0.0.3"}
    :headers {}
    :body    (str request)})
 
-(def event-loop (create-microhttp-event-loop #'handler {:port 1242}))
+(def event-loop (microhttp/create-event-loop #'handler {:port 1242}))
 
 (.start event-loop)
 ```

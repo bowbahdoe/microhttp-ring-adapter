@@ -81,7 +81,7 @@
                (.toByteArray out))))
 
 (defn- ring-handler->Handler
-  [{:keys [host port]} ring-handler]
+  [{:keys [host port debug]} ring-handler]
   (reify Handler
     (handle [_ microhttp-request callback]
       (let [ring-request (->req {:host host
@@ -89,19 +89,21 @@
         (Thread/startVirtualThread
           (fn []
             (.accept callback
-                     (<-res (try
-                              (ring-handler ring-request)
-                              (catch Exception e
-                                {:status 500
+                     (try
+                       (<-res (ring-handler ring-request))
+                       (catch Exception e
+                         (<-res {:status 500
                                  :headers {}
-                                 :body    (.getMessage e)}))))))))))
+                                 :body    (if debug
+                                            (.getMessage e)
+                                            "Internal Server Error")}))))))))))
 
-(defn create-microhttp-event-loop
+(defn create-event-loop
   ([handler]
-   (create-microhttp-event-loop handler {}))
+   (create-event-loop handler {}))
   ([handler options]
    (let [microhttp-options (cond-> (Options.)
-                             (some? (options :host))
+                             (contains? options :host)
                              (.withHost (:host options))
 
                              (some? (options :port))
@@ -131,8 +133,9 @@
      (EventLoop. microhttp-options
                  microhttp-logger
                  (ring-handler->Handler
-                   {:host (.host microhttp-options)
-                    :port (.port microhttp-options)}
+                   {:host  (.host microhttp-options)
+                    :port  (.port microhttp-options)
+                    :debug (or (:debug options) false)}
                    handler)))))
 
 (comment
@@ -143,4 +146,4 @@
                    (with-out-str
                      (clojure.pprint/pprint req))
                    "</pre>")})
-  (def event-loop (create-microhttp-event-loop #'handler {:port 1242})))
+  (def event-loop (create-event-loop #'handler {:port 1242})))
