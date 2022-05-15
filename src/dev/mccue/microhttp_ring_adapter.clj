@@ -1,9 +1,9 @@
 (ns dev.mccue.microhttp-ring-adapter
   (:require [clojure.string :as string]
             [ring.core.protocols :as ring-protocols])
-  (:import (org.microhttp Request Handler Response Header EventLoop Options DebugLogger)
+  (:import (org.microhttp Request Handler Response Header EventLoop Options DebugLogger Logger)
            (java.io ByteArrayInputStream ByteArrayOutputStream)
-           (java.util.concurrent Executors ForkJoinPool)))
+           (java.util.concurrent ForkJoinPool)))
 
 (set! *warn-on-reflection* true)
 
@@ -94,7 +94,7 @@
                             (try
                               (<-res (ring-handler ring-request))
                               (catch Exception e
-                                (<-res {:status 500
+                                (<-res {:status  500
                                         :headers {}
                                         :body    (if debug
                                                    (.getMessage e)
@@ -131,7 +131,12 @@
 
                              (some? (options :max-request-size))
                              (.withMaxRequestSize (:max-request-size options)))
-         microhttp-logger (or (:logger options) (DebugLogger.))
+         microhttp-logger (or (:logger options) (if (:debug options)
+                                                  (DebugLogger.)
+                                                  (reify Logger
+                                                    (enabled [_] false)
+                                                    (log [_ _])
+                                                    (log [_ _ _]))))
          executor         (or (:executor options) (ForkJoinPool/commonPool))]
      (EventLoop. microhttp-options
                  microhttp-logger
