@@ -2,7 +2,8 @@
   (:require [clojure.string :as string]
             [ring.core.protocols :as ring-protocols])
   (:import (org.microhttp Request Handler Response Header EventLoop Options DebugLogger)
-           (java.io ByteArrayInputStream ByteArrayOutputStream)))
+           (java.io ByteArrayInputStream ByteArrayOutputStream)
+           (java.util.concurrent Executors ForkJoinPool)))
 
 (set! *warn-on-reflection* true)
 
@@ -81,22 +82,23 @@
                (.toByteArray out))))
 
 (defn- ring-handler->Handler
-  [{:keys [host port debug]} ring-handler]
+  [{:keys [host port debug executor]} ring-handler]
   (reify Handler
     (handle [_ microhttp-request callback]
       (let [ring-request (->req {:host host
                                  :port port} microhttp-request)]
-        (Thread/startVirtualThread
-          (fn []
-            (.accept callback
-                     (try
-                       (<-res (ring-handler ring-request))
-                       (catch Exception e
-                         (<-res {:status 500
-                                 :headers {}
-                                 :body    (if debug
-                                            (.getMessage e)
-                                            "Internal Server Error")}))))))))))
+        (.submit executor
+                 ^Runnable
+                 (fn []
+                   (.accept callback
+                            (try
+                              (<-res (ring-handler ring-request))
+                              (catch Exception e
+                                (<-res {:status 500
+                                        :headers {}
+                                        :body    (if debug
+                                                   (.getMessage e)
+                                                   "Internal Server Error")}))))))))))
 
 (defn create-event-loop
   ([handler]
@@ -129,13 +131,15 @@
 
                              (some? (options :max-request-size))
                              (.withMaxRequestSize (:max-request-size options)))
-         microhttp-logger (or (:logger options) (DebugLogger.))]
+         microhttp-logger (or (:logger options) (DebugLogger.))
+         executor         (or (:executor options) (ForkJoinPool/commonPool))]
      (EventLoop. microhttp-options
                  microhttp-logger
                  (ring-handler->Handler
-                   {:host  (.host microhttp-options)
-                    :port  (.port microhttp-options)
-                    :debug (or (:debug options) false)}
+                   {:host     (.host microhttp-options)
+                    :port     (.port microhttp-options)
+                    :debug    (or (:debug options) false)
+                    :executor executor}
                    handler)))))
 
 (comment

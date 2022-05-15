@@ -1,6 +1,5 @@
 # Microhttp Ring Adapter
 
-# THIS REQUIRES VIRTUAL THREADS. JDK 19 + --enable-preview
 ## What 
 Adapter for using [microhttp](https://github.com/ebarlas/microhttp)
 as a ring server.
@@ -12,6 +11,9 @@ worth noting.
 
 This was done as a proof of concept, but the code is simple enough that
 I am confident it is as production ready as microhttp.
+
+That being said, I'm gonna put breaking changes in willy-nilly until it is
+published to maven central.
 
 ## deps.edn
 
