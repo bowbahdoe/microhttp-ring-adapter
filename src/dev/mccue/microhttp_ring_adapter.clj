@@ -3,7 +3,7 @@
             [ring.core.protocols :as ring-protocols])
   (:import (org.microhttp Request Handler Response Header EventLoop Options DebugLogger Logger)
            (java.io ByteArrayInputStream ByteArrayOutputStream)
-           (java.util.concurrent ForkJoinPool)))
+           (java.util.concurrent ForkJoinPool ExecutorService)))
 
 (set! *warn-on-reflection* true)
 
@@ -87,7 +87,7 @@
     (handle [_ microhttp-request callback]
       (let [ring-request (->req {:host host
                                  :port port} microhttp-request)]
-        (.submit executor
+        (.submit ^ExecutorService executor
                  ^Runnable
                  (fn []
                    (.accept callback
