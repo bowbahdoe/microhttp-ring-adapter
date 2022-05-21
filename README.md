@@ -18,7 +18,7 @@ published to maven central.
 ## deps.edn
 
 ```clojure
-io.github.bowbahdoe/microhttp-ring-adapter {:git/sha "eea6908127c340b8dd8fb61b3bd3507e791b66a9"}
+io.github.bowbahdoe/microhttp-ring-adapter {:git/sha "0e62b63661f6f4a3d9fc844f45f2ff26a19c1e6e"}
 ```
 
 ## Usage
