@@ -1,7 +1,7 @@
 (ns dev.mccue.microhttp-ring-adapter
   (:require [clojure.string :as string]
             [ring.core.protocols :as ring-protocols])
-  (:import (org.microhttp Request Handler Response Header EventLoop Options DebugLogger Logger)
+  (:import (org.microhttp NoopLogger OptionsBuilder Request Handler Response Header EventLoop Options DebugLogger Logger)
            (java.io ByteArrayInputStream ByteArrayOutputStream)
            (java.util.concurrent ForkJoinPool ExecutorService)))
 
@@ -104,39 +104,37 @@
   ([handler]
    (create-event-loop handler {}))
   ([handler options]
-   (let [microhttp-options (cond-> (Options.)
-                             (contains? options :host)
-                             (.withHost (:host options))
+   (let [microhttp-options-builder (cond-> (OptionsBuilder/newBuilder)
+                                     (contains? options :host)
+                                     (.withHost (:host options))
 
-                             (some? (options :port))
-                             (.withPort (:port options))
+                                     (some? (options :port))
+                                     (.withPort (:port options))
 
-                             (some? (options :reuse-addr))
-                             (.withReuseAddr (:reuse-addr options))
+                                     (some? (options :reuse-addr))
+                                     (.withReuseAddr (:reuse-addr options))
 
-                             (some? (options :reuse-port))
-                             (.withReusePort (:reuse-port options))
+                                     (some? (options :reuse-port))
+                                     (.withReusePort (:reuse-port options))
 
-                             (some? (options :resolution))
-                             (.withResolution (:resolution options))
+                                     (some? (options :resolution))
+                                     (.withResolution (:resolution options))
 
-                             (some? (options :request-timeout))
-                             (.withRequestTimeout (:request-timeout options))
+                                     (some? (options :request-timeout))
+                                     (.withRequestTimeout (:request-timeout options))
 
-                             (some? (options :read-buffer-size))
-                             (.withReadBufferSize (:read-buffer-size options))
+                                     (some? (options :read-buffer-size))
+                                     (.withReadBufferSize (:read-buffer-size options))
 
-                             (some? (options :accept-length))
-                             (.withAcceptLength (:accept-length options))
+                                     (some? (options :accept-length))
+                                     (.withAcceptLength (:accept-length options))
 
-                             (some? (options :max-request-size))
-                             (.withMaxRequestSize (:max-request-size options)))
+                                     (some? (options :max-request-size))
+                                     (.withMaxRequestSize (:max-request-size options)))
+         microhttp-options (.build microhttp-options-builder)
          microhttp-logger (or (:logger options) (if (:debug options)
                                                   (DebugLogger.)
-                                                  (reify Logger
-                                                    (enabled [_] false)
-                                                    (log [_ _])
-                                                    (log [_ _ _]))))
+                                                  (NoopLogger/instance)))
          executor         (or (:executor options) (ForkJoinPool/commonPool))]
      (EventLoop. microhttp-options
                  microhttp-logger

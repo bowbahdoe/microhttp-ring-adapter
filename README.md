@@ -12,9 +12,6 @@ worth noting.
 This was done as a proof of concept, but the code is simple enough that
 I am confident it is as production ready as microhttp.
 
-That being said, I'm gonna put breaking changes in willy-nilly until it is
-published to maven central.
-
 ## deps.edn
 
 ```clojure
