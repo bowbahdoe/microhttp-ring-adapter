@@ -15,7 +15,7 @@ I am confident it is as production ready as microhttp.
 ## deps.edn
 
 ```clojure
-io.github.bowbahdoe/microhttp-ring-adapter {:git/sha "0e62b63661f6f4a3d9fc844f45f2ff26a19c1e6e"}
+io.github.bowbahdoe/microhttp-ring-adapter {:git/sha "b3c3075fbe7b13a6c505eacbdaf264b18d865b6d"}
 ```
 
 ## Usage
